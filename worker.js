@@ -312,6 +312,23 @@ async function pub(req, env, path) {
     const seals = (await db.prepare('SELECT hour, root, reads, tx FROM seals ORDER BY hour DESC LIMIT 24').all()).results;
     return J({ seals, contract: env.SEAL_CONTRACT || '' });
   }
+  if (path === '/api/live') {
+    const hour = Math.floor(Date.now() / 3600000);
+    const [recent, pend, tot, sealed] = await Promise.all([
+      db.prepare("SELECT ts, hour, items, CASE WHEN app_id = 'signal' THEN 'signal' ELSE 'app' END AS kind, leaf FROM reads ORDER BY seq DESC LIMIT 30").all(),
+      db.prepare('SELECT COUNT(*) n FROM reads WHERE hour = ?').bind(hour).first(),
+      db.prepare('SELECT COUNT(*) n FROM reads').first(),
+      db.prepare('SELECT COUNT(*) n, COALESCE(SUM(reads), 0) r FROM seals WHERE tx IS NOT NULL').first(),
+    ]);
+    return J({ now: Date.now(), hour, pending: pend.n, total: tot.n, seals: sealed.n, sealed: sealed.r, recent: recent.results, contract: env.SEAL_CONTRACT || '' });
+  }
+  const sealM = path.match(/^\/api\/seal\/(\d{1,10})$/);
+  if (sealM) {
+    const s = await db.prepare('SELECT hour, root, reads, tx FROM seals WHERE hour = ?').bind(Number(sealM[1])).first();
+    if (!s) return E('No seal for this hour.', 404);
+    const leaves = (await db.prepare('SELECT leaf FROM seal_leaves WHERE hour = ? ORDER BY idx').bind(s.hour).all()).results.map((r) => r.leaf);
+    return J({ ...s, leaves, contract: env.SEAL_CONTRACT || '' });
+  }
   if (path === '/api/stats') {
     const [v, mm, r, s, sg] = await Promise.all([
       db.prepare('SELECT COUNT(*) n FROM vaults WHERE id NOT IN (SELECT id FROM demo_vaults)').first(),
