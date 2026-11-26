@@ -318,7 +318,7 @@ async function pub(req, env, path) {
       db.prepare('SELECT COUNT(*) n FROM memories').first(),
       db.prepare('SELECT COUNT(*) n FROM reads').first(),
       db.prepare('SELECT COUNT(*) n, COALESCE(SUM(reads), 0) sealed FROM seals').first(),
-      db.prepare("SELECT COUNT(*) n FROM signals WHERE live = 1 AND vault_id != 'demo-nora'").first(),
+      db.prepare("SELECT COUNT(*) n FROM signals WHERE live = 1 AND vault_id NOT IN ('demo-nora', 'official-axon')").first(),
     ]);
     return J({ vaults: v.n, memories: mm.n, reads: r.n, seals: s.n, sealed: s.sealed, signals: sg.n });
   }

@@ -1,7 +1,10 @@
 name = "axon"
 main = "worker.js"
 compatibility_date = "2026-11-01"
-routes = [{ pattern = "axonsignal.fun", custom_domain = true }]
+routes = [
+  { pattern = "axonsignal.fun", custom_domain = true },
+  { pattern = "www.axonsignal.fun", custom_domain = true }
+]
 
 [assets]
 directory = "./public"
