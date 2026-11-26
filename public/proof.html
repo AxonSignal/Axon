@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXON | Proof Explorer</title>
+<meta name="description" content="Every read of every AXON vault, folded into an hourly seal on Robinhood Chain. Rebuild any seal in your browser and check it against the chain.">
+<meta property="og:title" content="AXON | Proof Explorer">
+<meta property="og:description" content="Every read, sealed on Robinhood Chain. Verify any seal yourself, in your browser.">
+<meta property="og:image" content="/pp.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+.px { max-width: 1240px; margin: 0 auto; padding: 0 var(--gutter); }
+.p-hero { padding: 150px 0 40px; }
+.p-kick { font: 500 13px/1 var(--sans); letter-spacing: .38em; text-transform: uppercase; color: var(--ash); }
+.p-hero h1 { font: 400 clamp(52px, 8vw, 112px)/.96 var(--serif); margin: 22px 0 26px; letter-spacing: -.01em; }
+.p-hero h1 em { font-style: normal; color: var(--ion); }
+.p-hero p { max-width: 640px; color: #b9c1cc; font-size: 19px; margin: 0; }
+.counters { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 56px 0 0; }
+.counter { padding: 30px 26px 28px 0; }
+.counter + .counter { padding-left: 26px; border-left: 1px solid var(--rule); }
+.counter b { display: block; font: 400 clamp(40px, 5vw, 64px)/1 var(--serif); }
+.counter span { display: block; margin-top: 10px; color: var(--ash); font-size: 14.5px; }
+.counter.hot b { color: var(--ion); }
+.hourbar { margin: 70px 0 0; }
+.hourbar-top { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; flex-wrap: wrap; }
+.hourbar-top h2 { font: 400 40px/1.1 var(--serif); margin: 0; }
+.hourbar-top .cd { font: 400 15px var(--mono); color: var(--ash); }
+.hourbar-top .cd b { color: var(--vellum); font-weight: 400; }
+.track { position: relative; height: 96px; margin-top: 26px; border-radius: 16px; background: linear-gradient(180deg, rgba(15,20,29,.75), rgba(10,14,21,.75)); border: 1px solid var(--rule); overflow: hidden; }
+.track .fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, rgba(156,207,255,0), rgba(156,207,255,.08)); border-right: 1px solid rgba(156,207,255,.55); }
+.track .tick { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(236,228,212,.06); }
+.track .dot { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--ion); box-shadow: 0 0 14px 3px rgba(156,207,255,.45); }
+.track .dot.sig { background: var(--vellum); box-shadow: 0 0 14px 3px rgba(236,228,212,.35); }
+.track .dot.new { animation: pop 1.2s ease-out; }
+@keyframes pop { from { transform: scale(3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.axis { display: flex; justify-content: space-between; font: 400 12px var(--mono); color: var(--ash); margin-top: 10px; }
+.legend { display: flex; gap: 22px; margin-top: 14px; color: var(--ash); font-size: 14px; }
+.legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: var(--ion); }
+.legend i.sig { background: var(--vellum); }
+.feed { margin-top: 30px; border-top: 1px solid var(--rule); }
+.feed-row { display: grid; grid-template-columns: 120px 150px 1fr auto; gap: 18px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+.feed-row .t { font: 400 14px var(--mono); color: var(--ash); }
+.feed-row .k { color: var(--vellum); }
+.feed-row .n { color: var(--ash); }
+.feed-row code { font: 400 13px var(--mono); color: #8fa4bd; }
+.feed-row.new { animation: flash 1.6s ease-out; }
+@keyframes flash { from { background: rgba(156,207,255,.10); } to { background: transparent; } }
+.seal-sec { margin: 110px 0 0; }
+.seal-sec > h2 { font: 400 52px/1.05 var(--serif); margin: 0 0 12px; }
+.seal-sec > .lede { color: #b9c1cc; max-width: 640px; margin: 0 0 34px; }
+.seal-card { border: 1px solid var(--rule); border-radius: 18px; background: rgba(12,17,25,.6); margin-bottom: 14px; overflow: hidden; }
+.seal-head { display: grid; grid-template-columns: 1.3fr .7fr 1.6fr auto; gap: 18px; align-items: center; padding: 22px 26px; }
+.seal-head .h { font: 400 26px/1 var(--serif); }
+.seal-head .r { color: var(--ash); }
+.seal-head code { font: 400 13px var(--mono); color: #b9c1cc; }
+.seal-head .acts { display: flex; gap: 10px; align-items: center; }
+.seal-head .acts a { color: var(--ion); text-decoration: none; font-size: 14px; }
+.seal-body { display: none; padding: 0 26px 26px; }
+.seal-card.open .seal-body { display: block; }
+.checks { list-style: none; margin: 0 0 20px; padding: 0; }
+.checks li { display: flex; gap: 12px; align-items: baseline; padding: 9px 0; color: var(--ash); font-size: 15px; }
+.checks li::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--ash); transform: translateY(-1px); }
+.checks li.ok { color: var(--vellum); }
+.checks li.ok::before { background: var(--ion); border-color: var(--ion); box-shadow: 0 0 10px rgba(156,207,255,.6); }
+.checks li.bad { color: var(--danger); }
+.checks li.bad::before { background: var(--danger); border-color: var(--danger); }
+.checks code { font: 400 13px var(--mono); color: #b9c1cc; }
+.tree { width: 100%; height: auto; display: block; border-radius: 12px; background: rgba(0,0,0,.25); }
+.verdict { margin-top: 18px; font: 400 26px/1.3 var(--serif); }
+.verdict.ok { color: var(--ion); }
+.verdict.bad { color: var(--danger); }
+.how { margin: 120px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; border-top: 1px solid var(--rule); padding-top: 40px; }
+.how h3 { font: 400 28px/1.1 var(--serif); margin: 0 0 10px; }
+.how p { color: #b9c1cc; margin: 0; font-size: 16px; }
+.how code { font: 400 13.5px var(--mono); color: var(--ion); }
+.p-cta { margin: 110px 0 90px; text-align: center; }
+.p-cta h2 { font: 400 clamp(44px, 6vw, 76px)/1 var(--serif); margin: 0 0 30px; }
+.p-cta .actions { display: inline-flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.p-empty { padding: 26px 0; color: var(--ash); }
+@media (max-width: 860px) {
+  .counters { grid-template-columns: 1fr 1fr; }
+  .counter:nth-child(3) { border-left: 0; padding-left: 0; }
+  .counter:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  .feed-row { grid-template-columns: 90px 1fr auto; }
+  .feed-row .n { display: none; }
+  .seal-head { grid-template-columns: 1fr auto; }
+  .seal-head code { grid-column: 1 / -1; }
+  .how { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><img src="/pp.png" alt=""><span>AXON</span></a>
+  <nav>
+    <a href="/#wiring">Vault</a>
+    <a href="/#signal">Signal</a>
+    <a href="/proof" aria-current="page" style="color:var(--vellum)">Proof</a>
+    <a href="/#connector">Connector</a>
+    <a href="/#token">$AXON</a>
+  </nav>
+  <div class="top-right">
+    <button class="ca-chip" id="ca-top" type="button" title="Copy contract address"><span id="ca-top-text">CA soon</span><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+    <a class="btn small" href="/app">Open vault</a>
+  </div>
+</header>
+
+<main class="px">
+  <section class="p-hero">
+    <div class="p-kick">Proof Explorer</div>
+    <h1>Don't trust us.<br><em>Check the chain.</em></h1>
+    <p>Every time an app reads a vault or someone asks a Signal, the read becomes a fingerprint. Each hour the fingerprints fold into one Merkle root, written to Robinhood Chain. Pick any seal below and rebuild it yourself, right in your browser.</p>
+    <div class="counters">
+      <div class="counter"><b id="c-sealed">0</b><span>reads sealed on-chain</span></div>
+      <div class="counter"><b id="c-seals">0</b><span>hourly seals written</span></div>
+      <div class="counter hot"><b id="c-pending">0</b><span>reads waiting for the next seal</span></div>
+      <div class="counter"><b id="c-next">--:--</b><span>until the next seal</span></div>
+    </div>
+  </section>
+
+  <section class="hourbar">
+    <div class="hourbar-top">
+      <h2>This hour, live</h2>
+      <div class="cd" id="hour-label"></div>
+    </div>
+    <div class="track" id="track"><div class="fill" id="fill"></div></div>
+    <div class="axis"><span>:00</span><span>:15</span><span>:30</span><span>:45</span><span>:60</span></div>
+    <div class="legend"><span><i></i>App read</span><span><i class="sig"></i>Signal question</span></div>
+    <div class="feed" id="feed"><div class="p-empty">Loading the latest reads.</div></div>
+  </section>
+
+  <section class="seal-sec">
+    <h2>Sealed hours</h2>
+    <p class="lede">Open a seal to fetch its fingerprints, rebuild the Merkle tree locally and compare the root with what Robinhood Chain holds.</p>
+    <div id="seal-list"><div class="p-empty">Loading the seals.</div></div>
+  </section>
+
+  <section class="how">
+    <div><h3>A fingerprint per read</h3><p>Each read is hashed with <code>sha256</code> from its id, vault, app, folders, item count and time. Nothing readable is in it.</p></div>
+    <div><h3>One root per hour</h3><p>Fingerprints are paired and hashed up to a single root. Change one read and the root changes.</p></div>
+    <div><h3>Written on-chain</h3><p>The root goes to <a class="link" id="contract-link" href="#" target="_blank" rel="noopener"><code>AxonSeals</code></a> on Robinhood Chain. Anyone can read it back with <code>roots(hour)</code>.</p></div>
+  </section>
+
+  <section class="p-cta">
+    <h2>Your reads, proven too.</h2>
+    <div class="actions"><a class="btn" href="/app">Open your vault</a><a class="btn ghost" href="/s/axon">Ask AXON anything</a><a class="btn ghost" href="https://github.com/AxonSignal/Axon" target="_blank" rel="noopener">Read the code</a></div>
+  </section>
+</main>
+
+<footer>
+  <a class="brand" href="/"><img src="/pp.png" alt=""><span>AXON</span></a>
+  <div class="fine">
+    <a href="/app">Vault</a>
+    <a href="/proof">Proof</a>
+    <a href="https://github.com/AxonSignal/Axon" target="_blank" rel="noopener">GitHub</a>
+    <a id="x-link" href="#" hidden>X</a>
+    <span>Robinhood Chain</span>
+  </div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script src="/config.js"></script>
+<script src="/core.js"></script>
+<script>
+(() => {
+  const cfg = AX.cfg, $ = (s) => document.querySelector(s), esc = AX.esc;
+  const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); };
+  const copy = (v, m) => navigator.clipboard.writeText(v).then(() => toast(m)).catch(() => toast(v));
+  const pad = (n) => String(n).padStart(2, '0');
+  const utc = (ms) => { const d = new Date(ms); return `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`; };
+  const fmtHour = (h) => { const d = new Date(h * 3600000); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) + ', ' + pad(d.getUTCHours()) + ':00 UTC'; };
+  const num = (n) => Number(n || 0).toLocaleString('en-US');
+
+  // header bits
+  if (cfg.CA) { $('#ca-top-text').textContent = 'CA ' + AX.short(cfg.CA, 6, 4); $('#ca-top').onclick = () => copy(cfg.CA, 'Contract address copied'); }
+  else { $('#ca-top').classList.add('soon'); $('#ca-top').onclick = () => toast('The contract address appears here at launch.'); }
+  if (cfg.X_URL) { const x = $('#x-link'); x.href = cfg.X_URL; x.hidden = false; x.target = '_blank'; x.rel = 'noopener'; }
+  $('#contract-link').href = `${cfg.EXPLORER}/address/${cfg.SEAL_CONTRACT}`;
+
+  // hour track
+  const track = $('#track');
+  for (let i = 1; i < 12; i++) { const t = document.createElement('div'); t.className = 'tick'; t.style.left = (i / 12 * 100) + '%'; track.appendChild(t); }
+  let skew = 0, curHour = 0;
+  function clock() {
+    const now = Date.now() + skew, h = Math.floor(now / 3600000), f = (now / 3600000) - h;
+    $('#fill').style.width = (f * 100) + '%';
+    const left = Math.max(0, (h + 1) * 3600000 + 5 * 60000 - now); // bot seals a few minutes past the hour
+    const m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+    $('#c-next').textContent = `${pad(m)}:${pad(s)}`;
+    $('#hour-label').innerHTML = `Hour <b>${pad(new Date(h * 3600000).getUTCHours())}:00 UTC</b>, sealed at ${pad((new Date(h * 3600000).getUTCHours() + 1) % 24)}:05 UTC`;
+    if (h !== curHour && curHour) load();
+  }
+
+  const seen = new Set();
+  let first = true;
+  async function load() {
+    try {
+      const d = await AX.api('/api/live');
+      skew = d.now - Date.now(); curHour = d.hour;
+      $('#c-sealed').textContent = num(d.sealed);
+      $('#c-seals').textContent = num(d.seals);
+      $('#c-pending').textContent = num(d.pending);
+      // dots for this hour
+      track.querySelectorAll('.dot').forEach((n) => { if (Number(n.dataset.h) !== d.hour) n.remove(); });
+      for (const r of d.recent) {
+        if (r.hour !== d.hour || track.querySelector(`.dot[data-l="${r.leaf}"]`)) continue;
+        const dot = document.createElement('div');
+        dot.className = 'dot' + (r.kind === 'signal' ? ' sig' : '') + (first ? '' : ' new');
+        dot.dataset.l = r.leaf; dot.dataset.h = r.hour;
+        dot.style.left = ((r.ts / 3600000 - r.hour) * 100) + '%';
+        dot.title = `${r.kind === 'signal' ? 'Signal question' : 'App read'} at ${utc(r.ts)}`;
+        track.appendChild(dot);
+      }
+      // feed
+      if (!d.recent.length) { $('#feed').innerHTML = '<div class="p-empty">No reads yet.</div>'; }
+      else $('#feed').innerHTML = d.recent.slice(0, 12).map((r) => {
+        const isNew = !first && !seen.has(r.leaf);
+        return `<div class="feed-row${isNew ? ' new' : ''}"><span class="t">${utc(r.ts)}</span><span class="k">${r.kind === 'signal' ? 'Signal question' : 'App read'}</span><span class="n">${r.items} ${r.items === 1 ? 'memory' : 'memories'}${r.hour === d.hour ? ', next seal' : ', sealed'}</span><code>${AX.short('0x' + r.leaf, 8, 6)}</code></div>`;
+      }).join('');
+      d.recent.forEach((r) => seen.add(r.leaf));
+      first = false;
+    } catch { $('#feed').innerHTML = '<div class="p-empty">Live reads are unavailable right now. Refresh in a minute.</div>'; }
+  }
+
+  // seals
+  async function loadSeals() {
+    try {
+      const { seals } = await AX.api('/api/seals');
+      const el = $('#seal-list');
+      if (!seals.length) { el.innerHTML = '<div class="p-empty">The first seal lands an hour after the first read.</div>'; return; }
+      el.innerHTML = seals.map((s) => `<div class="seal-card" data-h="${s.hour}">
+        <div class="seal-head"><span class="h">${fmtHour(s.hour)}</span><span class="r">${s.reads} ${s.reads === 1 ? 'read' : 'reads'}</span><code>${AX.short('0x' + s.root, 12, 10)}</code>
+        <span class="acts">${s.tx ? `<a href="${cfg.EXPLORER}/tx/${s.tx}" target="_blank" rel="noopener">Transaction</a>` : '<span class="r">Writing on-chain</span>'}<button class="btn ghost small" data-act="verify">Verify</button></span></div>
+        <div class="seal-body"></div></div>`).join('');
+    } catch { $('#seal-list').innerHTML = '<div class="p-empty">Seals are unavailable right now. Refresh in a minute.</div>'; }
+  }
+
+  async function parent(a, b) { const u = new Uint8Array(64); u.set(AX.unhex(a)); u.set(AX.unhex(b), 32); return AX.sha(u); }
+  async function levels(leaves) {
+    const out = [leaves.slice()];
+    while (out[out.length - 1].length > 1) {
+      const lvl = out[out.length - 1], next = [];
+      for (let i = 0; i < lvl.length; i += 2) next.push(await parent(lvl[i], lvl[i + 1] ?? lvl[i]));
+      out.push(next);
+    }
+    return out;
+  }
+  function treeSvg(lv) {
+    const W = 1100, rows = lv.length, H = Math.max(140, rows * 62 + 30), maxShow = 64;
+    const pos = lv.map((lvl, r) => {
+      const n = Math.min(lvl.length, maxShow), y = H - 30 - r * ((H - 60) / Math.max(1, rows - 1));
+      return Array.from({ length: n }, (_, i) => ({ x: 40 + (W - 80) * (n === 1 ? .5 : i / (n - 1)), y }));
+    });
+    let lines = '', dots = '';
+    for (let r = 0; r < rows - 1; r++) pos[r].forEach((p, i) => { const q = pos[r + 1][Math.min(pos[r + 1].length - 1, Math.floor(i / 2))]; lines += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`; });
+    pos.forEach((lvl, r) => lvl.forEach((p) => { const top = r === rows - 1; dots += `<circle cx="${p.x}" cy="${p.y}" r="${top ? 9 : r === 0 ? 4.5 : 3.5}" fill="${top ? '#9ccfff' : r === 0 ? '#ece4d4' : '#8fa4bd'}"${top ? ' filter="url(#gl)"' : ''}/>`; }));
+    const more = lv[0].length > maxShow ? `<text x="${W - 40}" y="${H - 8}" text-anchor="end" fill="#8d95a3" font-size="13" font-family="JetBrains Mono">first ${maxShow} of ${lv[0].length} leaves shown</text>` : '';
+    return `<svg class="tree" viewBox="0 0 ${W} ${H}"><defs><filter id="gl"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g stroke="rgba(156,207,255,.28)" stroke-width="1">${lines}</g>${dots}${more}</svg>`;
+  }
+
+  $('#seal-list').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act="verify"]'); if (!btn) return;
+    const card = btn.closest('.seal-card'), body = card.querySelector('.seal-body');
+    if (card.classList.contains('open') && body.dataset.done) { card.classList.remove('open'); return; }
+    card.classList.add('open'); btn.disabled = true;
+    const steps = ['Fetch the fingerprints of this hour', 'Rebuild the Merkle root in your browser', 'Read the root stored on Robinhood Chain', 'Compare both roots'];
+    body.innerHTML = `<ul class="checks">${steps.map((s) => `<li>${s}</li>`).join('')}</ul><div class="tree-box"></div><div class="verdict"></div>`;
+    const li = body.querySelectorAll('.checks li'), mark = (i, ok, extra) => { li[i].className = ok ? 'ok' : 'bad'; if (extra) li[i].innerHTML = esc(steps[i]) + ' ' + extra; };
+    const verdict = body.querySelector('.verdict');
+    try {
+      const s = await AX.api('/api/seal/' + card.dataset.h);
+      mark(0, true, `<code>${s.leaves.length} leaves</code>`);
+      const lv = await levels(s.leaves), root = lv[lv.length - 1][0];
+      body.querySelector('.tree-box').innerHTML = treeSvg(lv);
+      if (root !== s.root) { mark(1, false, `<code>${AX.short('0x' + root, 10, 8)}</code>`); throw new Error('The rebuilt root does not match the published one.'); }
+      mark(1, true, `<code>${AX.short('0x' + root, 10, 8)}</code>`);
+      if (!s.tx) { verdict.className = 'verdict'; verdict.textContent = 'Root rebuilt. This seal is being written on-chain, check again in a few minutes.'; body.dataset.done = 1; return; }
+      const chain = await AX.onchainRoot(s.contract || cfg.SEAL_CONTRACT, s.hour);
+      mark(2, true, `<code>${AX.short('0x' + chain, 10, 8)}</code>`);
+      if (chain !== root) { mark(3, false); throw new Error('The root on Robinhood Chain does not match.'); }
+      mark(3, true);
+      verdict.className = 'verdict ok';
+      verdict.textContent = `Verified. ${s.reads === 1 ? 'The only read' : s.reads === 2 ? 'Both reads' : 'All ' + s.reads + ' reads'} of this hour ${s.reads === 1 ? 'is' : 'are'} sealed on ${cfg.CHAIN_NAME}.`;
+      body.dataset.done = 1;
+    } catch (err) {
+      verdict.className = 'verdict bad'; verdict.textContent = err.message || 'Verification failed.';
+    } finally { btn.disabled = false; }
+  });
+
+  load(); loadSeals(); clock();
+  setInterval(clock, 1000);
+  setInterval(load, 15000);
+  setInterval(loadSeals, 120000);
+})();
+</script>
+</body>
+</html>
