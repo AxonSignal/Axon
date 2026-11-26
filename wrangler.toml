@@ -1,0 +1,23 @@
+name = "axon"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+routes = [{ pattern = "axonsignal.fun", custom_domain = true }]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "axon-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[triggers]
+crons = ["3 * * * *"]
+
+[ai]
+binding = "AI"
+
+[vars]
+SEAL_CONTRACT = "0x7e0b2F07d9f9A9e5b40b674A1e7dBC2471c76984"
+TOKEN_CA = ""
