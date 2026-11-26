@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXON | Memory in, signal out</title>
+<meta name="description" content="AXON is an encrypted vault for what your AIs should know about you, and a Signal that answers people as you. Your wallet holds the key. Every read is sealed on Robinhood Chain.">
+<meta property="og:title" content="AXON | Memory in, signal out">
+<meta property="og:description" content="One encrypted memory for every AI you use, and a Signal that answers as you. Sealed on Robinhood Chain.">
+<meta property="og:image" content="/pp.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><img src="/pp.png" alt=""><span>AXON</span></a>
+  <nav>
+    <a href="#wiring">Vault</a>
+    <a href="#signal">Signal</a>
+    <a href="#seals">Seals</a>
+    <a href="#connector">Connector</a>
+    <a href="#token">$AXON</a>
+  </nav>
+  <div class="top-right">
+    <button class="ca-chip" id="ca-top" type="button" title="Copy contract address"><span id="ca-top-text">CA soon</span><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+    <a class="ico" id="x-top" href="#" target="_blank" rel="noopener" aria-label="AXON on X" hidden><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3Zm-1.08 16.2h1.7L7.4 4.73H5.58L16.67 19.2Z"/></svg></a>
+    <a class="ico" href="https://github.com/AxonSignal/Axon" target="_blank" rel="noopener" aria-label="AXON on GitHub"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg></a>
+    <a class="btn small" href="/app">Open vault</a>
+  </div>
+</header>
+
+<section class="hero">
+  <canvas id="mark" aria-hidden="true"></canvas>
+  <div class="hero-copy">
+    <h1>Memory in.<br>Signal out.</h1>
+    <p>AXON keeps what your AIs should know about you in one encrypted vault, opened by your wallet. You choose which app reads which folder, and your Signal answers people as you. Every read is sealed on Robinhood Chain.</p>
+    <div class="actions">
+      <a class="btn" href="/app">Open your vault</a>
+      <a class="btn ghost" href="/app?demo=1">Try the demo</a>
+      <a class="link" href="/s/axon">Ask AXON anything</a>
+    </div>
+    <div class="live" id="live" hidden><i></i><span><b id="st-v">0</b> vaults, <b id="st-m">0</b> memories, <b id="st-r">0</b> reads sealed</span></div>
+  </div>
+</section>
+
+<main>
+  <div class="spine" aria-hidden="true"><div class="spine-pulse" id="pulse"></div></div>
+
+  <section class="sec" id="wiring">
+    <h2>You decide who reads what.</h2>
+    <p class="lede">Each folder in your vault has its own key. An app only receives the keys of the folders you tick, so everything else stays unreadable to it. Pick an app, then tick its folders.</p>
+    <div class="board" id="board">
+      <svg id="wires" aria-hidden="true"></svg>
+      <div class="col folders" id="folders"></div>
+      <div class="col apps" id="apps"></div>
+    </div>
+    <p class="board-note" id="note"></p>
+  </section>
+
+  <section class="sec" id="signal">
+    <div class="signal-split">
+      <div>
+        <h2>Your Signal speaks for you.</h2>
+        <p class="lede">The vault is what goes in. Your Signal is what comes out: a public page where anyone can ask you a question and get an answer in your words, drawn only from the folders you chose to share. Each question is logged and sealed like any other read.</p>
+        <div class="actions-row"><a class="btn" href="/app">Claim your Signal</a><a class="btn ghost" href="/s/nora">Ask Nora's Signal</a></div>
+      </div>
+      <figure class="signal-demo" aria-label="Example of a Signal page">
+        <figcaption><span class="sd-name">Maya Chen</span><span class="sd-handle">/s/maya</span><span class="sd-tag">Example</span></figcaption>
+        <p class="sd-q">What are you building right now?</p>
+        <p class="sd-a">A tool that lets small shops take payments on Robinhood Chain. I am on the checkout flow this month, and I care more about it being fast than pretty.</p>
+        <p class="sd-q">How do you prefer to work with people?</p>
+        <p class="sd-a">Short messages, clear asks, and a deadline. I answer quickest in the morning.</p>
+        <p class="sd-foot">Answered from Self card and Work. Sealed on Robinhood Chain.</p>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sec" id="seals">
+    <h2>Every read, sealed every hour.</h2>
+    <p class="lede">When an app reads your vault, the read is logged. Each hour, all reads are folded into a single fingerprint and written to Robinhood Chain. You can prove any read of yours is inside it without showing anyone else's.</p>
+    <div class="seals" id="seal-list"><div class="seals-empty">Loading the latest seals.</div></div>
+    <p class="contract-line" id="contract-line"></p>
+  </section>
+
+  <section class="sec" id="start">
+    <h2>Ready in ten minutes.</h2>
+    <p class="lede">No account, no email, no password. Your wallet is the only way in.</p>
+    <ol class="steps">
+      <li><h3>Open with your wallet</h3><p>Connect and sign one message. The signature becomes your vault key inside your browser. Nothing is sent on-chain and it costs no gas.</p></li>
+      <li><h3>Fill it</h3><p>Write memories, sort them in folders and fill your self card. You can import your ChatGPT or Claude history; it is unpacked and encrypted on your device.</p></li>
+      <li><h3>Connect your apps</h3><p>Create an app key, tick the folders it may read and paste it into Claude, Cursor or any MCP app. Apps can suggest memories, you keep or reject them.</p></li>
+      <li><h3>Turn on your Signal</h3><p>Pick the folders you are happy to make public and choose your link. People ask, your Signal answers as you, and every question lands in your log with its seal.</p></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="connector">
+    <h2>Plug it into the apps you already use.</h2>
+    <p class="lede">The connector is one small file that runs on your computer. It decrypts the folders an app may read, locally, and hands them to the app through MCP.</p>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" aria-selected="true" data-t="desktop">Claude Desktop</button>
+      <button class="tab" role="tab" aria-selected="false" data-t="code">Claude Code</button>
+      <button class="tab" role="tab" aria-selected="false" data-t="cursor">Cursor</button>
+    </div>
+    <pre class="code" id="snippet"></pre>
+    <div class="code-actions">
+      <a class="btn ghost small" href="/axon-connector.mjs" download>Download the connector</a>
+      <button class="btn ghost small" id="copy-snippet">Copy config</button>
+    </div>
+    <div class="tools-list">
+      <div><code>axon_self</code><p>Reads your self card first, so answers start from who you are.</p></div>
+      <div><code>axon_folders</code><p>Lists the folders this app may read.</p></div>
+      <div><code>axon_read_folder</code><p>Reads one allowed folder.</p></div>
+      <div><code>axon_search</code><p>Finds memories by words across allowed folders.</p></div>
+      <div><code>axon_suggest</code><p>Sends a new memory to your inbox. You decide.</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="token">
+    <div class="token">
+      <div>
+        <h2>$AXON</h2>
+        <p class="lede">The token of the AXON vault, live on Robinhood Chain.</p>
+        <div class="ca" id="ca-box"></div>
+        <div class="code-actions" id="token-links"></div>
+      </div>
+      <img src="/pp.png" alt="AXON mark">
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a class="brand" href="/"><img src="/pp.png" alt=""><span>AXON</span></a>
+  <div class="fine">
+    <a href="/app">Vault</a>
+    <a href="/axon-connector.mjs" download>Connector</a>
+    <a href="https://github.com/AxonSignal/Axon" target="_blank" rel="noopener">GitHub</a>
+    <a id="x-link" href="#" hidden>X</a>
+    <span>Robinhood Chain</span>
+  </div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script src="/config.js"></script>
+<script src="/core.js"></script>
+<script src="/fibers.js"></script>
+<script>
+(() => {
+  const cfg = AX.cfg, $ = (s) => document.querySelector(s);
+  const toast = (t) => { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 1800); };
+  const copy = async (t, msg) => { try { await navigator.clipboard.writeText(t); toast(msg); } catch { toast('Copy failed, select the text instead.'); } };
+
+  const wide = () => innerWidth > 860;
+  AxonMark($('#mark'), { cx: wide() ? 0.7 : 0.5, cy: wide() ? 0.5 : 0.3, fill: wide() ? 0.96 : 0.6, maxW: 1 });
+
+  // live numbers
+  AX.api('/api/stats').then((s) => {
+    const n = (v, one, many) => `<b>${v.toLocaleString('en-US')}</b> ${v === 1 ? one : many}`;
+    $('#live span').innerHTML = `${n(s.vaults, 'vault', 'vaults')}, ${s.signals ? n(s.signals, 'Signal live', 'Signals live') + ', ' : ''}${n(s.sealed, 'read sealed', 'reads sealed')} on-chain`;
+    $('#live').hidden = false;
+  }).catch(() => {});
+
+  // spine pulse follows the reader
+  const main = document.querySelector('main'), pulse = $('#pulse');
+  const nodes = [...document.querySelectorAll('.sec h2')].map((h) => { const n = document.createElement('div'); n.className = 'node'; main.appendChild(n); return { h, n }; });
+  function placeNodes() { const mt = main.getBoundingClientRect().top + scrollY; nodes.forEach(({ h, n }) => { n.style.top = (h.getBoundingClientRect().top + scrollY - mt + h.offsetHeight * 0.45) + 'px'; }); }
+  function onScroll() {
+    const mt = main.getBoundingClientRect().top + scrollY;
+    const y = Math.max(0, Math.min(main.offsetHeight, scrollY + innerHeight * 0.5 - mt));
+    pulse.style.top = y + 'px';
+    nodes.forEach(({ n }) => n.classList.toggle('lit', parseFloat(n.style.top) <= y));
+  }
+  placeNodes(); onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', () => { placeNodes(); onScroll(); wire(); });
+  document.fonts && document.fonts.ready.then(() => { placeNodes(); onScroll(); wire(); });
+
+  // wiring demo (example data)
+  const FOLDERS = [['self', 'Self card', 'who you are'], ['work', 'Work', '42 memories'], ['proj', 'Projects', '18 memories'], ['voice', 'Writing voice', '9 memories'], ['travel', 'Travel', '23 memories']];
+  const APPS = [['claude', 'Claude'], ['chatgpt', 'ChatGPT'], ['cursor', 'Cursor'], ['cc', 'Claude Code']];
+  const grants = { claude: new Set(['self', 'work', 'voice']), chatgpt: new Set(['self', 'travel']), cursor: new Set(['proj']), cc: new Set(['self', 'proj']) };
+  let sel = 'claude';
+  const fEl = $('#folders'), aEl = $('#apps');
+  fEl.innerHTML = FOLDERS.map(([id, n, s]) => `<button class="chip" data-f="${id}"><span>${n}<br><small>${s}</small></span><span class="tick"></span></button>`).join('');
+  aEl.innerHTML = APPS.map(([id, n]) => `<button class="chip" data-a="${id}"><span>${n}</span></button>`).join('');
+  fEl.addEventListener('click', (e) => { const b = e.target.closest('[data-f]'); if (!b) return; const g = grants[sel]; g.has(b.dataset.f) ? g.delete(b.dataset.f) : g.add(b.dataset.f); render(); });
+  aEl.addEventListener('click', (e) => { const b = e.target.closest('[data-a]'); if (!b) return; sel = b.dataset.a; render(); });
+  function render() {
+    fEl.querySelectorAll('[data-f]').forEach((b) => b.classList.toggle('on', grants[sel].has(b.dataset.f)));
+    aEl.querySelectorAll('[data-a]').forEach((b) => { b.classList.toggle('sel', b.dataset.a === sel); b.setAttribute('aria-pressed', b.dataset.a === sel); });
+    const name = APPS.find((a) => a[0] === sel)[1];
+    const list = FOLDERS.filter((f) => grants[sel].has(f[0])).map((f) => f[1]);
+    $('#note').innerHTML = list.length
+      ? `<b>${name}</b> holds the keys to ${list.join(', ')}. The other folders stay sealed to it, even on our server.`
+      : `<b>${name}</b> holds no keys. It cannot read anything in your vault.`;
+    wire();
+  }
+  function wire() {
+    const svg = $('#wires'), box = $('#board').getBoundingClientRect();
+    if (getComputedStyle(svg).display === 'none') return;
+    let out = '';
+    for (const [aid] of APPS) for (const fid of grants[aid]) {
+      const f = fEl.querySelector(`[data-f="${fid}"]`).getBoundingClientRect(), a = aEl.querySelector(`[data-a="${aid}"]`).getBoundingClientRect();
+      const x1 = f.right - box.left, y1 = f.top + f.height / 2 - box.top, x2 = a.left - box.left, y2 = a.top + a.height / 2 - box.top;
+      const on = aid === sel, strands = on ? 9 : 4;
+      for (let i = 0; i < strands; i++) {
+        const o = (i - (strands - 1) / 2) * (on ? 1.6 : 1.2), mx = (x1 + x2) / 2;
+        out += `<path d="M${x1},${y1 + o * 0.6} C${mx + o * 6},${y1 + o * 2} ${mx - o * 6},${y2 - o * 2} ${x2},${y2 + o * 0.4}" fill="none" stroke="${on ? 'rgba(156,207,255,' + (0.25 + 0.05 * (i % 3)) + ')' : 'rgba(236,228,212,0.07)'}" stroke-width="${on ? 0.8 : 0.6}"/>`;
+      }
+    }
+    svg.innerHTML = out;
+  }
+  render();
+
+  // seals
+  const fmtHour = (h) => { const d = new Date(h * 3600000); return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' }) + ' UTC'; };
+  AX.api('/api/seals').then(({ seals, contract }) => {
+    const c = contract || cfg.SEAL_CONTRACT;
+    const el = $('#seal-list');
+    if (!seals.length) { el.innerHTML = '<div class="seals-empty">The first seal lands an hour after the first read.</div>'; }
+    else el.innerHTML = seals.map((s) => `<div class="seal-row"><span class="h">${fmtHour(s.hour)}</span><span class="r">${s.reads} ${s.reads === 1 ? 'read' : 'reads'}</span><code>${AX.short('0x' + s.root, 10, 8)}</code>${s.tx ? `<a href="${cfg.EXPLORER}/tx/${s.tx}" target="_blank" rel="noopener">On-chain</a>` : '<span class="pending">Writing on-chain</span>'}</div>`).join('');
+    if (c) $('#contract-line').innerHTML = `Seal contract <a class="link" href="${cfg.EXPLORER}/address/${c}" target="_blank" rel="noopener">${AX.short(c, 8, 6)}</a> on ${cfg.CHAIN_NAME}.`;
+  }).catch(() => { $('#seal-list').innerHTML = '<div class="seals-empty">Seals are unavailable right now. Refresh in a minute.</div>'; });
+
+  // connector snippets
+  const origin = location.origin;
+  const SNIP = {
+    desktop: `{
+  "mcpServers": {
+    "axon": {
+      "command": "node",
+      "args": ["C:\\\\path\\\\to\\\\axon-connector.mjs"],
+      "env": {
+        "AXON_KEY": "axon_your_app_key",
+        "AXON_URL": "${origin}"
+      }
+    }
+  }
+}`,
+    code: `claude mcp add axon -e AXON_KEY=axon_your_app_key -e AXON_URL=${origin} -- node /path/to/axon-connector.mjs`,
+    cursor: `// ~/.cursor/mcp.json
+{
+  "mcpServers": {
+    "axon": {
+      "command": "node",
+      "args": ["/path/to/axon-connector.mjs"],
+      "env": { "AXON_KEY": "axon_your_app_key", "AXON_URL": "${origin}" }
+    }
+  }
+}`,
+  };
+  let tab = 'desktop';
+  const showTab = () => { $('#snippet').textContent = SNIP[tab]; document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', t.dataset.t === tab)); };
+  $('#tabs').addEventListener('click', (e) => { const t = e.target.closest('[data-t]'); if (t) { tab = t.dataset.t; showTab(); } });
+  $('#copy-snippet').addEventListener('click', () => copy(SNIP[tab], 'Config copied'));
+  showTab();
+
+  // token
+  const caBox = $('#ca-box'), links = $('#token-links');
+  if (cfg.CA) {
+    caBox.innerHTML = `<code id="ca">${cfg.CA}</code><button class="btn ghost small" id="copy-ca">Copy</button>`;
+    $('#copy-ca').addEventListener('click', () => copy(cfg.CA, 'Contract address copied'));
+    links.innerHTML = (cfg.PONS_URL ? `<a class="btn" href="${cfg.PONS_URL}" target="_blank" rel="noopener">Buy on Pons</a>` : '') +
+      `<a class="btn ghost" href="${cfg.EXPLORER}/token/${cfg.CA}" target="_blank" rel="noopener">View on explorer</a>`;
+  } else {
+    caBox.innerHTML = '<span class="soon">The contract address appears here at launch.</span>';
+  }
+  if (cfg.X_URL) { const x = $('#x-link'); x.href = cfg.X_URL; x.hidden = false; x.target = '_blank'; x.rel = 'noopener'; const xt = $('#x-top'); xt.href = cfg.X_URL; xt.hidden = false; }
+  const caTop = $('#ca-top');
+  if (cfg.CA) { $('#ca-top-text').textContent = 'CA ' + AX.short(cfg.CA, 6, 4); caTop.onclick = () => copy(cfg.CA, 'Contract address copied'); }
+  else { caTop.classList.add('soon'); caTop.onclick = () => toast('The contract address appears here at launch.'); }
+})();
+</script>
+</body>
+</html>

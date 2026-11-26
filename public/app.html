@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXON | Your vault</title>
+<link rel="icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body class="app">
+<header class="bar">
+  <a class="brand" href="/"><img src="/pp.png" alt=""><span>AXON</span></a>
+  <nav class="views" id="views" hidden>
+    <button data-v="memories" aria-current="page">Memories</button>
+    <button data-v="signal">Signal</button>
+    <button data-v="inbox">Inbox <em id="inbox-n" hidden></em></button>
+    <button data-v="apps">Apps</button>
+    <button data-v="log">Read log</button>
+    <button data-v="import">Import</button>
+    <button data-v="settings">Settings</button>
+  </nav>
+  <div class="who" id="who"></div>
+</header>
+
+<!-- locked -->
+<section class="gate" id="gate">
+  <canvas id="gate-mark" aria-hidden="true"></canvas>
+  <div class="gate-copy">
+    <h1 id="gate-title">Open your vault</h1>
+    <p id="gate-text">Connect your wallet, then sign one message. The signature becomes your vault key in this browser. It is free and sends no transaction.</p>
+    <div class="gate-actions" id="gate-actions"></div>
+    <p class="gate-error" id="gate-error" role="alert"></p>
+  </div>
+</section>
+
+<!-- open -->
+<div class="shell" id="shell" hidden>
+  <div class="demo-bar" id="demo-bar" hidden><span>You are in a demo vault filled with example data. It is wiped after a few hours.</span><button class="btn small" id="demo-real">Open my own vault</button></div>
+  <!-- memories -->
+  <section class="view" data-view="memories">
+    <aside class="rail">
+      <div class="rail-head"><span>Folders</span><button class="mini" id="new-folder">New folder</button></div>
+      <ul id="folder-list"></ul>
+      <p class="rail-foot" id="vault-size"></p>
+    </aside>
+    <div class="pane">
+      <div class="pane-head">
+        <h2 id="folder-title"></h2>
+        <div class="pane-tools">
+          <button class="mini" id="rename-folder">Rename</button>
+          <button class="mini danger" id="delete-folder">Delete folder</button>
+        </div>
+      </div>
+      <p class="pane-hint" id="folder-hint"></p>
+      <form class="composer" id="composer">
+        <input id="m-title" placeholder="Title (optional)" maxlength="200" autocomplete="off">
+        <textarea id="m-text" rows="3" placeholder="Something your AIs should know about you" maxlength="12000"></textarea>
+        <div class="composer-foot"><span id="m-count"></span><button class="btn small" type="submit">Save memory</button></div>
+      </form>
+      <div class="search"><input id="search" type="search" placeholder="Search this folder" autocomplete="off"><label><input type="checkbox" id="search-all"> All folders</label></div>
+      <ol class="memories" id="memory-list"></ol>
+    </div>
+  </section>
+
+  <!-- signal -->
+  <section class="view" data-view="signal" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Signal</h2><a class="btn ghost small" id="sig-open" target="_blank" rel="noopener" hidden>Open my Signal</a></div>
+      <p class="pane-hint">Your Signal is the public side of your vault. Anyone with the link can ask it questions and it answers as you, using only the folders you pick here. Every question is logged and sealed on Robinhood Chain like any other read.</p>
+      <div class="card" id="sig-live" hidden>
+        <h3>Your Signal is live</h3>
+        <div class="ca"><code id="sig-url"></code><button class="btn ghost small" id="sig-copy">Copy link</button></div>
+        <p id="sig-stats" class="muted"></p>
+        <div class="row"><button class="btn ghost small" id="sig-holder">Verify $AXON holding</button><span id="sig-holder-out" class="muted"></span></div>
+      </div>
+      <div class="card" id="sig-demo" hidden>
+        <h3>Signals are for real vaults</h3>
+        <p>A demo vault cannot publish a Signal. Meet Nora instead: a live demo Signal you can ask anything.</p>
+        <a class="btn small" href="/s/nora" target="_blank" rel="noopener">Talk to Nora's Signal</a>
+      </div>
+      <form class="card" id="sig-form">
+        <label class="field">Link<span class="handle"><span id="sig-prefix"></span><input id="sig-handle" placeholder="yourname" maxlength="20" autocomplete="off" required></span></label>
+        <label class="field">Display name<input id="sig-name" maxlength="40" placeholder="Your name" autocomplete="off" required></label>
+        <label class="field">Short bio<input id="sig-bio" maxlength="200" placeholder="What people should know before they ask" autocomplete="off"></label>
+        <fieldset class="field"><legend>Folders your Signal can use</legend><div class="checks" id="sig-folders"></div></fieldset>
+        <p class="warn">Anyone with the link can learn what is in these folders. Only pick what you are happy to make public.</p>
+        <div class="row"><button class="btn small" type="submit" id="sig-save">Publish my Signal</button><button class="btn danger small" type="button" id="sig-off" hidden>Take it down</button></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- inbox -->
+  <section class="view" data-view="inbox" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Inbox</h2></div>
+      <p class="pane-hint">Apps you connected can suggest memories. Nothing is added until you keep it.</p>
+      <ol class="memories" id="inbox-list"></ol>
+    </div>
+  </section>
+
+  <!-- apps -->
+  <section class="view" data-view="apps" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Apps</h2><button class="btn small" id="new-app">Connect an app</button></div>
+      <p class="pane-hint">Each app gets its own key and only the folders you tick. Revoking an app makes its next request fail.</p>
+      <form class="card" id="app-form" hidden>
+        <label class="field">App name<input id="app-name" placeholder="Claude Desktop" maxlength="60" required autocomplete="off"></label>
+        <fieldset class="field"><legend>Folders it may read</legend><div class="checks" id="app-folders"></div></fieldset>
+        <div class="row"><button class="btn small" type="submit">Create app key</button><button class="btn ghost small" type="button" id="app-cancel">Cancel</button></div>
+      </form>
+      <div class="card keybox" id="keybox" hidden>
+        <h3>Your app key</h3>
+        <p>Copy it now. It is shown once and never stored in readable form.</p>
+        <div class="ca"><code id="new-key"></code><button class="btn ghost small" id="copy-key">Copy key</button></div>
+        <div class="tabs" id="key-tabs">
+          <button class="tab" aria-selected="true" data-t="desktop">Claude Desktop</button>
+          <button class="tab" aria-selected="false" data-t="code">Claude Code</button>
+          <button class="tab" aria-selected="false" data-t="cursor">Cursor</button>
+        </div>
+        <pre class="code" id="key-snippet"></pre>
+        <div class="row"><a class="btn ghost small" href="/axon-connector.mjs" download>Download the connector</a><button class="btn ghost small" id="copy-config">Copy config</button><button class="btn small" id="key-done">Done</button></div>
+      </div>
+      <ol class="apps" id="app-list"></ol>
+    </div>
+  </section>
+
+  <!-- log -->
+  <section class="view" data-view="log" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Read log</h2><button class="mini" id="log-refresh">Refresh</button></div>
+      <p class="pane-hint">Every time an app reads your vault, it shows here. Each hour the reads are sealed on Robinhood Chain; verify any read against its seal.</p>
+      <ol class="log" id="log-list"></ol>
+    </div>
+  </section>
+
+  <!-- import -->
+  <section class="view" data-view="import" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Import your history</h2></div>
+      <p class="pane-hint">Drop the export from ChatGPT (Settings, Data controls, Export) or Claude (Settings, Privacy, Export data). The file is unpacked in this browser and each conversation becomes one encrypted memory.</p>
+      <label class="drop" id="drop"><input type="file" id="import-file" accept=".zip,.json" hidden><span id="drop-text">Drop the .zip here or click to choose it</span></label>
+      <div class="card" id="import-preview" hidden>
+        <p id="import-summary"></p>
+        <label class="field">Save into<select id="import-folder"></select></label>
+        <div class="row"><button class="btn small" id="import-go">Import</button><button class="btn ghost small" id="import-cancel">Cancel</button></div>
+        <div class="progress" id="import-progress" hidden><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- settings -->
+  <section class="view" data-view="settings" hidden>
+    <div class="pane wide">
+      <div class="pane-head"><h2>Settings</h2></div>
+      <div class="card">
+        <h3>Export everything</h3>
+        <p>Download every folder and memory, decrypted on this device, as one JSON file.</p>
+        <button class="btn ghost small" id="export">Download export</button>
+      </div>
+      <div class="card">
+        <h3>Your vault</h3>
+        <p>Your vault is tied to this wallet's signature. Signing the same message with the same wallet always opens it again, on any device. Lose the wallet and nobody can open the vault, including us.</p>
+        <p class="muted" id="vault-id"></p>
+      </div>
+      <div class="card danger-zone">
+        <h3>Delete the vault</h3>
+        <p>Removes every folder, memory, app key and inbox item from the server. Seals already written on-chain stay, they hold no content.</p>
+        <button class="btn danger small" id="delete-vault">Delete the vault</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<dialog id="dlg"><form method="dialog" id="dlg-form"><h3 id="dlg-title"></h3><p id="dlg-text"></p><div id="dlg-extra"></div><div class="row"><button class="btn small" value="ok" id="dlg-ok">OK</button><button class="btn ghost small" value="cancel">Cancel</button></div></form></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="/config.js"></script>
+<script src="/core.js"></script>
+<script src="/fibers.js"></script>
+<script src="/importer.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
